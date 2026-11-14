@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}领片列表 · {{ lab }}{% endblock %}
+{% block content %}
+<h1>领片列表</h1>
+<p class="lede">大文件先切片再抢领解析。各任务的切片进度各态并排分开，收口名写在最右。</p>
+<table class="grid">
+  <thead>
+    <tr>
+      <th>编号</th><th>标题</th><th>任务状态</th>
+      <th>待领</th><th>已领片</th><th>已成功</th><th>已失败</th>
+      <th>总片数</th><th>收口名</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>{{ r.job.id }}</td>
+      <td>{{ r.job.title }}</td>
+      <td><span class="chip">{{ r.job.status }}</span></td>
+      <td>{{ r.pending }}</td>
+      <td>{{ r.claimed }}</td>
+      <td>{{ r.ok }}</td>
+      <td>{% if r.failed %}<span class="bad">{{ r.failed }}</span>{% else %}0{% endif %}</td>
+      <td>{{ r.total }}</td>
+      <td><span class="chip closure">{{ r.closure_name }}</span></td>
+      <td><a href="/jobs/{{ r.job.id }}/">读盘详情</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

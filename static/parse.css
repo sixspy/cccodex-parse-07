@@ -40,3 +40,27 @@ button.secondary { background: transparent; color: var(--accent); }
 .meta dt { font-size: .75rem; color: #7a7163; } .meta dd { margin: .15rem 0 0; }
 .actions { display: flex; gap: .8rem; margin-top: 1.5rem; }
 a { color: var(--accent); }
+.nav { display: flex; gap: 1.2rem; font-family: "IBM Plex Sans", "Segoe UI", sans-serif; font-size: .95rem; }
+.flashes { margin-bottom: 1.2rem; }
+.flash { padding: .6rem .9rem; border: 1px solid var(--line); background: #fffdf8; font-family: "IBM Plex Sans", sans-serif; }
+.flash.success { border-color: #6b8e4e; color: #3d5a26; }
+.flash.error { border-color: #b3543f; color: #8a2f1d; }
+.flash.info { border-color: #8a7f5c; color: #5c5346; }
+.panel { background: #fffdf8; border: 1px solid var(--line); padding: 1.1rem 1.25rem; margin-top: 1.4rem; }
+.panel h2 { margin: 0 0 .5rem; font-size: 1.05rem; }
+.inline-form { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; font-family: "IBM Plex Sans", sans-serif; }
+.inline-form label { margin: 0; }
+.inline-form input, .inline-form select { margin-top: .3rem; padding: .45rem .6rem; border: 1px solid var(--line); background: #fff; }
+.inline-form button { margin-top: 0; }
+.cell-form { display: flex; gap: .4rem; }
+button.mini { margin-top: 0; padding: .3rem .7rem; font-size: .85rem; }
+.bar { display: flex; height: 12px; border: 1px solid var(--line); background: #f3ecdd; overflow: hidden; }
+.bar .seg { display: block; height: 100%; }
+.bar .seg.ok { background: #6b8e4e; }
+.bar .seg.claimed { background: #c9a227; }
+.bar .seg.failed { background: #b3543f; }
+.bad { color: #8a2f1d; font-weight: 600; }
+.chip.closure { background: #e7dcc4; }
+.actions-panel { display: flex; gap: .8rem; }
+.actions-panel button { margin-top: 0; }
+table.slices td, table.slices th { font-size: .9rem; }

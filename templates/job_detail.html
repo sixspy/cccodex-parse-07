@@ -1,17 +1,94 @@
 {% extends "base.html" %}
 {% block title %}{{ job.title }} · {{ lab }}{% endblock %}
 {% block content %}
-<p class="crumb"><a href="/jobs/">← 返回列表</a></p>
+<p class="crumb"><a href="/jobs/">← 解析任务</a> · <a href="/slices/">领片列表</a></p>
 <h1>{{ job.title }}</h1>
 <dl class="meta">
   <div><dt>编码</dt><dd class="mono">{{ job.code }}</dd></div>
   <div><dt>状态</dt><dd><span class="chip">{{ job.status }}</span></dd></div>
   <div><dt>源地址</dt><dd class="mono">{{ job.source_uri }}</dd></div>
-  <div><dt>已解析</dt><dd>{{ job.parsed }}</dd></div>
-  <div><dt>已入库</dt><dd>{{ job.landed }}</dd></div>
+  <div><dt>已解析 / 已入库</dt><dd>{{ job.parsed }} / {{ job.landed }}</dd></div>
 </dl>
-<div class="actions">
-  <form method="post" action="/jobs/{{ job.id }}/parse/">{% csrf_token %}<button type="submit">执行解析</button></form>
-  <form method="post" action="/jobs/{{ job.id }}/land/">{% csrf_token %}<button type="submit" class="secondary">执行入库</button></form>
-</div>
+
+<section class="panel">
+  <h2>切片进度</h2>
+  {% if tally.total %}
+  <p class="lede">共 {{ tally.total }} 片 · 待领 {{ tally.pending }} · 已领片 {{ tally.claimed }} · 已成功 {{ tally.ok }} · 已失败 {{ tally.failed }}</p>
+  <div class="bar">
+    <span class="seg ok" style="width:{% widthratio tally.ok tally.total 100 %}%"></span>
+    <span class="seg claimed" style="width:{% widthratio tally.claimed tally.total 100 %}%"></span>
+    <span class="seg failed" style="width:{% widthratio tally.failed tally.total 100 %}%"></span>
+  </div>
+  {% else %}
+  <p class="lede">尚未切片。先在下方写入片规策略，大文件切片后即可抢领解析。</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>片规策略</h2>
+  {% if policy %}
+  <p class="lede">
+    总片数 {{ policy.slice_total }} · 片失败收口「{{ policy.closure_name }}」 · 锁定于 {{ policy.locked_date }}（本日不得更换）
+  </p>
+  {% else %}
+  <p class="lede">尚未写入片规策略。写入后即按总片数切片，片失败收口本日不得更换。</p>
+  {% endif %}
+  <form method="post" action="/jobs/{{ job.id }}/policy/" class="inline-form">
+    {% csrf_token %}
+    <label>总片数 <input name="slice_total" value="{{ policy.slice_total|default:4 }}" /></label>
+    <label>片失败收口
+      <select name="closure">
+        {% for value, name in closures %}
+        <option value="{{ value }}" {% if policy and policy.closure == value %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit">{% if policy %}更换片规策略{% else %}写入片规并切片{% endif %}</button>
+  </form>
+</section>
+
+{% if policy %}
+<section class="panel">
+  <h2>抢领切片</h2>
+  <form method="post" action="/jobs/{{ job.id }}/claim/" class="inline-form">
+    {% csrf_token %}
+    <label>片号 <input name="slice_no" placeholder="1 ~ {{ policy.slice_total }}" /></label>
+    <label>领片人 <input name="holder" placeholder="默认为自己" /></label>
+    <button type="submit">抢领</button>
+  </form>
+  <table class="grid slices">
+    <thead><tr><th>片号</th><th>状态</th><th>持有人</th><th>操作</th></tr></thead>
+    <tbody>
+    {% for s in slices %}
+      <tr>
+        <td class="mono">{{ s.slice_no }}</td>
+        <td><span class="chip st-{{ s.status }}">{{ s.status }}</span></td>
+        <td>{{ s.holder|default:"—" }}</td>
+        <td>
+          {% if s.status == "已领片" %}
+          <form method="post" action="/jobs/{{ job.id }}/slices/{{ s.slice_no }}/result/" class="cell-form">
+            {% csrf_token %}
+            <button type="submit" name="outcome" value="ok" class="mini">解析成功</button>
+            <button type="submit" name="outcome" value="fail" class="mini secondary">解析失败</button>
+          </form>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="panel actions-panel">
+  <form method="post" action="/jobs/{{ job.id }}/recycle/">
+    {% csrf_token %}
+    <input type="hidden" name="closure" value="{{ policy.closure }}" />
+    <button type="submit" class="secondary">回收失败片（按「{{ policy.closure_name }}」收口）</button>
+  </form>
+  <form method="post" action="/jobs/{{ job.id }}/assemble/">
+    {% csrf_token %}
+    <button type="submit">拼片落档</button>
+  </form>
+</section>
+{% endif %}
 {% endblock %}
